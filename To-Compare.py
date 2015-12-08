@@ -1,7 +1,7 @@
-# 
-
-import math
+# import system module
 import sys
+
+# import parallel module
 import pp
 
 # import twitter API library
@@ -10,13 +10,18 @@ from TwitterAPI import TwitterAPI
 import re
 # import Indico
 import indicoio
-# import GUI
-# from Tkinter import *
 
+# method to craw twits related to term, extract sentiment from them 
+# and compute the average sentiment score
 def crawlTwits(term):
     # get authentication
     api = TwitterAPI('1KxHa1hlPbRdsggvL5yfBgHPY', 'afQVw38uLX3Q1YdILflyG4FjWhjkMzXgSP9ypLee4LM4QIMOea', '2786140432-npYkBKUXdUj3ulYj5f2N7LLN7dVJD6L6KdoyyLi', 'qwOdzFwyNfBKcmO6tq2TbOElrDHfd0ooiXNhMy4a7kUMd')
     indicoio.config.api_key = 'e2637d8d80afb64412b3dda3dda64bdd'
+
+    # keep a counter to sum the sentiment score
+    scoreSum = 0
+    # keep a counter to sum the number of twits
+    twitsNum = 0
 
     # search twits
     r = api.request('search/tweets', {'q':term})
@@ -31,76 +36,63 @@ def crawlTwits(term):
         if text:
             # group into a text
             twit = text.group(1)
-            print(twit)
+            # print(twit)
             # send twit to indico to get sentiment analyzed
             sentimentNum = indicoio.sentiment_hq(twit)
-            print(sentimentNum)
-            if sentimentNum < 0.3:
-                print("Negative")
-            elif sentimentNum > 0.7:
-                print("Positive")
-            else:
-                print("Neutral")
-            print('\n')
-
-def sum_primes(n):
-    """Calculates sum of all primes below given integer n"""
-    return sum([x for x in xrange(2, n) if isprime(x)])
-
-
-print """Usage: python sum_primes.py [ncpus]
-    [ncpus] - the number of workers to run in parallel,
-    if omitted it will be set to the number of processors in the system"""
+            # print(sentimentNum)
+            # # add up score sum
+            # scoreSum += sentimentNum
+            # # increment number of twits
+            # twitsNum += 1
+            # if sentimentNum < 0.3:
+            #     print("Negative")
+            # elif sentimentNum > 0.7:
+            #     print("Positive")
+            # else:
+            #     print("Neutral")
+            # print('\n')
+    # compute the average sentiment score
+    average = scoreSum/twitsNum
+    # return the message
+    if average < 0.2:
+        rate = "very negative"
+    elif average <0.4:
+        rate = "slightly negative"
+    elif average > 0.6:
+        rate = "slightly positive"
+    elif average > 0.8:
+        rate = "very positive"
+    else:
+        rate = "neutral"
+    # string to return
+    string = "an average score of " + str(average) + "\nOverall, it is " + str(rate)
+    return string
 
 # Set up job server
 # tuple of all parallel python servers to connect with
-#  like an array
 ppservers = ()
 #ppservers = ("127.0.0.1:60000", )
 
-if len(sys.argv) > 1:
-    terms = sys.argv[1]
-    inputs = terms.split(',')
-    # Creates jobserver with ncpus workers
-    # build a job server, like a box with worker
-    # make # of workers
-    job_server = pp.Server(len(inputs), ppservers=ppservers)
-else:
-    # Creates jobserver with automatically detected number of workers
-    job_server = pp.Server(ppservers=ppservers)
+# take in inputs from user
+terms = raw_input("Give me a list of terms separated with <> to be searched in parallel!\nThe number of terms is the number of processors\n")
+# split them base on commas
+inputs = terms.strip().split("<>")
+
+# Creates jobserver with len(inputs) workers
+job_server = pp.Server(len(inputs), ppservers=ppservers)
 
 print "Starting pp with", job_server.get_ncpus(), "workers"
 
-# Submit a job of calulating sum_primes(100) for execution.
-# sum_primes - the function
-# (100,) - tuple with arguments for sum_primes
-# (isprime,) - tuple with functions on which function sum_primes depends
-# ("math",) - tuple with module names which must be imported before
-#             sum_primes execution
-# Execution starts as soon as one of the workers will become available
-# give the boss the job and broadcast job for all
-# job1 = job_server.submit(sum_primes, (100, ), (isprime, ), ("math", ))
-
-# Retrieves the result calculated by job1
-# The value of job1() is the same as sum_primes(100)
-# If the job has not been finished yet, execution will
-# wait here until result is available
-# result = job1()
-
-# print "Sum of primes below 100 is", result
-
-
-# The following submits 8 jobs and then retrieves the results
-# List/vector
-# inputs = (100000, 100100, 100200, 100300, 100400, 100500, 100600, 100700)
-# jobs = [(input, job_server.submit(sum_primes, (input, ), (isprime, ),
-        # ("math", ))) for input in inputs]
-jobs = [(input, job_server.submit(crawlTwits, (input, ), 
-    ("TwitterAPI", "re", "indicoio", ))) for input in inputs]
+# Submit a job of crawling twits for execution.
+# crawTwits - the function
+# (input,) - tuple with arguments for crawTwits
+# () - tuple with functions on which function sum_primes depends
+# ("from TwitterAPI import TwitterAPI", "re", "indicoio", ) 
+# - tuple with module names which must be imported before crawTwits execution
+jobs = [(input, job_server.submit(crawlTwits, (input, ), (),
+    ("from TwitterAPI import TwitterAPI", "re", "indicoio", ))) for input in inputs]
 
 for input, job in jobs:
-    print "Twits regarding", input, "are", job()
+    print "\nTwits regarding", input, "have", job()
 
 job_server.print_stats()
-
-# Parallel Python Software: http://www.parallelpython.com
