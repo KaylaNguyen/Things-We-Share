@@ -40,10 +40,10 @@ def crawlTwits(term):
             # send twit to indico to get sentiment analyzed
             sentimentNum = indicoio.sentiment_hq(twit)
             # print(sentimentNum)
-            # # add up score sum
-            # scoreSum += sentimentNum
-            # # increment number of twits
-            # twitsNum += 1
+            # add up score sum
+            scoreSum += sentimentNum
+            # increment number of twits
+            twitsNum += 1
             # if sentimentNum < 0.3:
             #     print("Negative")
             # elif sentimentNum > 0.7:
