@@ -8,3 +8,8 @@
 
 ##### Technologies used
 * Twitter library, Indico's sentiment analysis and parallel web crawler.
+
+##### To run program
+* Install TwitterAPI: pip install TwitterAPI
+* Install indicoio PyPo package: pip install indicoio
+* Run program: python To-Compare.py
