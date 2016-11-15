@@ -1,10 +1,10 @@
 # To-Compare
 
 ##### What
-* To-Compare is a Python application to compare things based on how people twit about them to help make decisions
+* To-Compare is a Python application to compare things based on how people tweet about them to help make decisions
 
 ##### How
-* The program takes in inputs from users then use parallel web crawler to crawl Twitter search results, computing people's average sentiment from most recent twits. 
+* The program takes in inputs from users then use parallel web crawler to crawl Twitter search results, computing people's average sentiment from most recent tweets. 
 
 ##### Technologies used
 * Twitter library, Indico's sentiment analysis and parallel web crawler.
